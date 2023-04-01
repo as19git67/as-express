@@ -1,8 +1,8 @@
-const DB = require('../lib/database');
-const AsExpress = require('../lib/as-express');
-const {DateTime} = require("luxon");
-const _ = require("lodash");
-const expect = require('chai').expect;
+import DB from '../lib/database.js';
+import AsExpress from '../lib/as-express.js';
+import {DateTime} from "luxon";
+import _ from "lodash";
+import {expect} from 'chai';
 
 const dbSchema = [
   {
@@ -71,7 +71,13 @@ const app = new App();
 
 const asExpress = new AsExpress('as-express-test', app);
 
+after(function(){
+  console.log('Testing finished. Terminating http server');
+  asExpress.terminateHttpServer();
+});
+
 describe('Testing the Database Functions', function() {
+
 
   let db;
   let existingUserIds = [];

@@ -1,6 +1,4 @@
-'use strict';
+import AsExpress from './lib/as-express.js';
+import AsRouteConfig from './lib/as-router.js';
 
-const AsExpress = require('./lib/as-express');
-const AsRouteConfig = require('./lib/as-router');
-
-module.exports = { AsExpress, AsRouteConfig };
+export { AsExpress, AsRouteConfig };

@@ -2,6 +2,7 @@
   "name": "as-express",
   "version": "1.0.0",
   "description": "Extensions for node.js + express to have role based authorization",
+  "type": "module",
   "main": "index.js",
   "scripts": {
     "test": "mocha tests"
@@ -20,6 +21,7 @@
     "luxon": "^3.3.0",
     "morgan": "^1.10.0",
     "mssql": "^9.1.1",
+    "p-wait-for": "^5.0.2",
     "passport": "^0.6.0",
     "passport-http": "^0.3.0",
     "passport-http-bearer": "^1.0.1",
