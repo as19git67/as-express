@@ -4,7 +4,7 @@
   "description": "Extensions for node.js + express to have role based authorization",
   "main": "index.js",
   "scripts": {
-    "test": "node tests/database.test.js"
+    "test": "mocha tests"
   },
   "author": "Anton Schegg",
   "license": "ISC",
@@ -17,7 +17,7 @@
     "js-yaml": "^4.1.0",
     "knex": "^2.4.2",
     "lodash": "^4.17.21",
-    "luxon": "^3.2.1",
+    "luxon": "^3.3.0",
     "morgan": "^1.10.0",
     "mssql": "^9.1.1",
     "passport": "^0.6.0",
@@ -25,6 +25,10 @@
     "passport-http-bearer": "^1.0.1",
     "passport-local": "^1.0.0",
     "speakeasy": "^2.0.0",
-    "sqlite3": "^5.1.4"
+    "sqlite3": "^5.1.6"
+  },
+  "devDependencies": {
+    "chai": "^4.3.7",
+    "mocha": "^10.2.0"
   }
 }

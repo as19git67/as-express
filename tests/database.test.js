@@ -1,6 +1,8 @@
-const config = require('../lib/config');
 const DB = require('../lib/database');
 const AsExpress = require('../lib/as-express');
+const {DateTime} = require("luxon");
+const _ = require("lodash");
+const expect = require('chai').expect;
 
 const dbSchema = [
   {
@@ -69,75 +71,129 @@ const app = new App();
 
 const asExpress = new AsExpress('as-express-test', app);
 
-new Promise(async (resolve, reject) => {
-  try {
+describe('Testing the Database Functions', function() {
+
+  let db;
+  let existingUserIds = [];
+  const usersToDelete = [];
+  let oldPw, newPw, userId;
+
+  it('Initializing AsExpress', async function () {
     await asExpress.init({
       dbSchema: dbSchema,
       permissions: permissions,
     });
+  });
 
-    console.log('creating user');
-    const db = new DB({appName: asExpress.appName});
-    const usersToDelete = [];
-    let userId = await db.createUser('joe@example.com', 'honk123;Z');
-    console.log(`User created with id=${userId}`);
-    userId = await db.createUser('joe@example.com', '93h8tgqi');
-    console.log(`User created with id=${userId}`);
+  it('creating db instance', function (done) {
+    db = new DB({appName: asExpress.appName});
+    expect(db).to.not.be.undefined;
+    done();
+  });
+
+  it('reading already existing users', async function () {
+    existingUserIds = _.map(await db.getUser(), (user)=> {
+      return user.id;
+    });
+  });
+
+  it('creating users', async function () {
+    userId = await db.createUser('joe@example.com', 'honk123;Z');
+    expect(userId).to.not.be.undefined;
+    expect(userId).to.be.a('number')
+    oldPw = '93h8tgqi';
+    userId = await db.createUser('joe@example.com', oldPw);
     usersToDelete.push(userId);
+    expect(userId).to.not.be.undefined;
+    expect(userId).to.be.a('number')
+  });
+
+  it('set EmailConfirmed to true and try creating user with same email again, which must fail', async function () {
+    await db.updateUserById(userId, {EmailConfirmed: true})
+
+    let ok;
+    try {
+      const userId = await db.createUser('joe@example.com', '98igoauhg9');
+      ok = false; // must not come here, because the createUser call must throw an exception
+    } catch(ex) {
+      ok = ex.cause === 'exists';
+    }
+    expect(ok).to.be.true;
+  });
+
+  it('update password and try login', async function () {
+    let ok;
+    newPw = '&lg652!2dg';
+    await db.updateUserById(userId, {Password: newPw});
+    try {
+      await db.validateUser('joe@example.com', oldPw);
+      ok = false; // must not come here, because it is expected that validateUser fails due to wrong pw
+    } catch(ex) {
+      ok = ex.cause === 'invalid';
+    }
+    expect(ok).to.be.true;
+
+    try {
+      await db.validateUser('joe@example.com', newPw);
+      ok = true; // must come here, because it is expected that validateUser succeeds with correct
+    } catch(ex) {
+        ok = false; // must not fail with wrong password or any other error
+    }
+    expect(ok).to.be.true;
+  });
+
+  it('update expiration date and try login', async function () {
+    let ok;
+    // check expired user fails validation
+    await db.updateUserByEmail('joe@example.com', {ExpiredAfter: DateTime.now().minus({'minutes': 1})});
+    try {
+      await db.validateUser('joe@example.com', newPw);
+      ok = false; // Validation did not fail for expired user
+    } catch(reason) {
+      ok = reason.cause === 'expired';
+    }
+    expect(ok).to.be.true;
+  });
+
+  it('Check getUserByEmail', async function () {
     userId = await db.createUser('nick@example.com', 'lagrjpoa@gagj');
-    console.log(`User created with id=${userId}`);
     usersToDelete.push(userId);
     const u2 = await db.getUserByEmail('joe@example.com');
-    if (!u2) {
-      throw new Error('Created user not returned from database');
-    }
-    if (u2.Email !== 'joe@example.com') {
-      throw new Error('Created user has wrong email in database');
-    }
+    expect(u2).to.not.be.undefined;
+    expect(u2.Email).to.equal('joe@example.com');
+    expect(u2.EmailConfirmed).to.equal(1);
+    expect(u2.PasswordSalt).to.not.be.undefined;
+    expect(u2.PasswordSalt).to.not.equal('');
+
     const u3 = await db.getUserByEmail('nick@example.com');
-    if (!u3) {
-      throw new Error('Created user not returned from database');
-    }
-    if (u3.Email !== 'nick@example.com') {
-      throw new Error('Created user has wrong email in database');
-    }
+    expect(u3).to.not.be.undefined;
+    expect(u3.Email).to.equal('nick@example.com');
+    expect(u3.PasswordSalt).to.not.be.undefined;
+    expect(u3.PasswordSalt).to.not.equal('');
+    expect(u2.PasswordSalt).to.not.equal(u3.PasswordSalt);
+
     const u3b = await db.getUserById(userId);
-    if (!u3b) {
-      throw new Error('Created user not returned from database');
-    }
-    if (u3b.Email !== 'nick@example.com') {
-      throw new Error('Created user has wrong email in database');
-    }
+    expect(u3b).to.not.be.undefined;
+    expect(u3b.Email).to.equal('nick@example.com');
+  });
+
+  it('Check deleteUsers', async function () {
     userId = await db.createUser('Karin@example.com', 'Karin Nubrowski');
-    console.log(`User created with id=${userId}`);
     usersToDelete.push(userId);
     userId = await db.createUser('jeff@example.com', 'Jeff Amazini');
-    console.log(`User created with id=${userId}`);
     usersToDelete.push(userId);
     const u3d = await db.deleteUsers([usersToDelete[0]]);
-    if (u3d !== 1) {
-      throw new Error(`Deleting of user with id ${userId} failed`);
-    }
+    expect(u3d).to.equal(1);
     const u3dd = await db.deleteUsers(usersToDelete);
-    if (u3dd !== 3) {
-      throw new Error(`Deleting of remaining users failed`);
-    }
+    expect(u3dd).to.equal(3);
+    const leftUsers = await db.getUser();
+    const leftUsersIds = _.map(leftUsers, (user)=> {
+      return user.id;
+    });
 
+    let difference = existingUserIds.filter(x => !leftUsersIds.includes(x));
+    expect(difference.length).to.equal(0);
+  });
 
-
-    resolve();
-  } catch (ex) {
-    reject(ex);
-  }
-}).then(() => {
-  console.log("Database test was successful");
-  process.exit(0);
-}).catch((reason) => {
-  console.log("Database test failed");
-  if (reason.data) {
-    console.log(reason.data);
-  } else {
-    console.log(reason);
-  }
-  process.exit(1);
 });
+
