@@ -1,5 +1,6 @@
 import DB from '../lib/database.js';
 import AsExpress from '../lib/as-express.js';
+import config from '../lib/config.js';
 import {DateTime} from "luxon";
 import _ from "lodash";
 import {expect} from 'chai';
@@ -66,6 +67,8 @@ class App {
     this.#kv[k] = v;
   }
 }
+
+config.dataDirectory = '.';
 
 const app = new App();
 
