@@ -6,7 +6,7 @@
   },
   "rules": {
     "no-restricted-syntax": ["error", "ForInStatement", "LabeledStatement", "WithStatement"],
-    "no-underscore-dangle": ["error", { "allow": ["bar_", "_foo"] }],
+    "no-underscore-dangle": ["error", { "allowAfterThis": true }],
     "import/extensions": ["error", "never", { "js": "always" }]
   }
 }
