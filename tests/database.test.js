@@ -94,6 +94,7 @@ describe('Testing the Database Functions', () => {
     await asExpress.init({
       dbSchemas: [dbSchema],
       permissions,
+      dropTables: true, // for testing start with empty DB
     });
   });
 
