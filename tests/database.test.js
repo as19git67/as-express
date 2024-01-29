@@ -32,31 +32,31 @@ const permissions = {
   test1_list_read: {
     description: 'TestUniqueString anzeigen',
     resources: ['/api/v1/gattung'],
-    permissions: ['get'],
+    methods: ['get'],
     menus: ['admin.gattungen'],
   },
   test1_create: {
     description: 'Neuen TestUniqueString anlegen',
     resources: ['/api/v1/gattung'],
-    permissions: ['put'],
+    methods: ['put'],
     menus: ['admin.gattung'],
   },
   test1_read: {
     description: 'TestUniqueString anzeigen',
     resources: ['/api/v1/gattung/:id'],
-    permissions: ['get'],
+    methods: ['get'],
     menus: ['admin.gattung'],
   },
   test1_update: {
     description: 'TestUniqueString ändern',
     resources: ['/api/v1/gattung/:id'],
-    permissions: ['get', 'post'],
+    methods: ['get', 'post'],
     menus: ['admin.gattung'],
   },
   test1_delete: {
     description: 'TestUniqueString löschen',
     resources: ['/api/v1/gattung/:id'],
-    permissions: ['delete'],
+    methods: ['delete'],
     menus: ['admin.gattung'],
   },
 };
