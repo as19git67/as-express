@@ -1,6 +1,6 @@
 {
   "name": "as-express",
-  "version": "1.0.21",
+  "version": "1.0.22",
   "description": "Extensions for node.js + express to have role based authorization",
   "type": "module",
   "main": "index.js",
