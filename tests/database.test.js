@@ -73,6 +73,7 @@ class App {
 }
 
 config.dataDirectory = '.';
+config.initialAdminPassword = 'this is just an example';
 
 const app = new App();
 
