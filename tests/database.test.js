@@ -173,7 +173,7 @@ describe('Testing the Database Functions', () => {
     const u2 = await db.getUserByEmail('joe@example.com');
     expect(u2).to.not.be.undefined;
     expect(u2.Email).to.equal('joe@example.com');
-    expect(u2.EmailConfirmed).to.equal(1);
+    expect(u2.EmailConfirmed).to.equal(true);
     expect(u2.PasswordSalt).to.not.be.undefined;
     expect(u2.PasswordSalt).to.not.equal('');
 
